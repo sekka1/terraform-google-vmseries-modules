@@ -175,3 +175,25 @@ variable "dependencies" {
   default = []
   type    = list(string)
 }
+
+variable "confidential_instance_configs" {
+  description = "(Optional) - Enable Confidential Mode on this VM"
+  type        = list(any)
+  default     = []
+#   [
+#     {
+#       enable_confidential_compute = false 
+#     }
+#   ]
+  
+variable "scheduling" {
+  description = "(Optional) The scheduling strategy to use"
+  type        = list(any)
+  default     = []
+#   [
+#     {
+#       on_host_maintenance = "TERMINATE" 
+#     }
+#   ]
+}
+  
