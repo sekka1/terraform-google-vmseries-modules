@@ -106,6 +106,22 @@ resource "google_compute_instance" "this" {
       type  = var.disk_type
     }
   }
+  
+  dynamic "confidential_instance_config" {
+    for_each = var.confidential_instance_configs
+    
+    content {
+       enable_confidential_compute = confidential_instance_config.value.enable_confidential_compute
+    }
+  }
+
+  dynamic "scheduling" {
+    for_each = var.schedulings
+    
+    content {
+       on_host_maintenance = scheduling.value.on_host_maintenance
+    }
+  }
 
   depends_on = [
     null_resource.dependency_getter
