@@ -187,7 +187,7 @@ variable "confidential_instance_configs" {
 #   ]
 }
 
-variable "scheduling" {
+variable "schedulings" {
   description = "(Optional) The scheduling strategy to use"
   type        = list(any)
   default     = []
