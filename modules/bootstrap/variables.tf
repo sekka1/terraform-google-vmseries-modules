@@ -15,3 +15,9 @@ variable "service_account" {
   default     = null
   type        = string
 }
+
+variable "location" {
+  description = "Optional The GCS location."
+  default     = null
+  type        = string
+}
