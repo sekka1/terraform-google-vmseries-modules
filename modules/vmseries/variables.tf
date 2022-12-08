@@ -185,7 +185,8 @@ variable "confidential_instance_configs" {
 #       enable_confidential_compute = false 
 #     }
 #   ]
-  
+}
+
 variable "scheduling" {
   description = "(Optional) The scheduling strategy to use"
   type        = list(any)
