@@ -102,7 +102,7 @@ resource "google_compute_instance" "this" {
 
   boot_disk {
     initialize_params {
-      image = "ubuntu-2004-focal-v20221206" #coalesce(var.custom_image, try(data.google_compute_image.vmseries[0].self_link, null))
+      image = coalesce(var.custom_image, try(data.google_compute_image.vmseries[0].self_link, null))
       type  = var.disk_type
     }
   }
