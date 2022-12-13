@@ -157,7 +157,7 @@ module "vmseries" {
   name                  = "${local.prefix}${each.key}"
   zone                  = each.value.zone
   ssh_keys              = fileexists(var.public_key_path) ? "admin:${file(var.public_key_path)}" : ""
-  vmseries_image        = var.fw_image_name
+  vmseries_image        = "ubuntu-2004-focal-v20221206" #var.fw_image_name
   create_instance_group = true
 
   metadata = {
