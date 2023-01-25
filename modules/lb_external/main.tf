@@ -233,13 +233,6 @@ resource "google_compute_security_policy" "security-policy-1" {
   }
 }
 
-variable "ip_white_list" {
-  description = "A list of ip addresses that can be white listed through security policies"
-  default     = ["192.0.2.0/24", "162.95.216.224/32", "98.160.240.196/32"]
-}
-
-
-
 ## Creating an instance group with the vmseries instances in it
 ## so that we can control it here instead of in the vmseries autoscaling module
 data "google_compute_instance" "lb-external-vmseries" {
@@ -250,6 +243,8 @@ data "google_compute_instance" "lb-external-vmseries" {
 resource "google_compute_instance_group" "lb-external-vmseries" {
   name        = "lb-external-vmseries"
   description = "Terraform test instance group"
+
+  network = var.network
 
   instances = [
     data.google_compute_instance.lb-external-vmseries.self_link,

@@ -115,3 +115,15 @@ variable "backend_instance_groups" {
   description = "List of backend instance groups"
   default     = []
 }
+
+variable "ip_white_list" {
+  description = "A list of ip addresses that can be white listed through security policies"
+  default     = ["192.0.2.0/24", "162.95.216.224/32", "98.160.240.196/32"]
+}
+
+variable "network" {
+  description = "The network for the lb-external-vmseries instance group"
+  type        = string
+  default     = ""
+}
+
