@@ -153,13 +153,17 @@ resource "google_compute_backend_service" "this" {
   protocol              = "HTTP" #"UNSPECIFIED"
   project               = var.project
 
-  dynamic "backend" {
-    for_each = var.backend_instance_groups
-    content {
-      group = backend.value
-      # balancing_mode = "CONNECTION"
-      # max_rate = 1
-    }
+  # dynamic "backend" {
+  #   for_each = var.backend_instance_groups
+  #   content {
+  #     group = backend.value
+  #     # balancing_mode = "CONNECTION"
+  #     # max_rate = 1
+  #   }
+  # }
+
+  backend {
+    group = google_compute_instance_group.lb-external-vmseries.id
   }
 
   security_policy = google_compute_security_policy.security-policy-1.self_link
@@ -231,5 +235,35 @@ resource "google_compute_security_policy" "security-policy-1" {
 
 variable "ip_white_list" {
   description = "A list of ip addresses that can be white listed through security policies"
-  default     = ["192.0.2.0/24", "162.95.216.224/32"]
+  default     = ["192.0.2.0/24", "162.95.216.224/32", "98.160.240.196/32"]
+}
+
+
+
+## Creating an instance group with the vmseries instances in it
+## so that we can control it here instead of in the vmseries autoscaling module
+data "google_compute_instance" "lb-external-vmseries" {
+  name = "vmseries-p1p9"
+  zone = "us-central1-f"
+}
+
+resource "google_compute_instance_group" "lb-external-vmseries" {
+  name        = "lb-external-vmseries"
+  description = "Terraform test instance group"
+
+  instances = [
+    data.google_compute_instance.lb-external-vmseries.self_link,
+  ]
+
+  named_port {
+    name = "http"
+    port = "80"
+  }
+
+  named_port {
+    name = "https"
+    port = "443"
+  }
+
+  zone = "us-central1-f"
 }
