@@ -82,7 +82,7 @@ resource "google_compute_target_http_proxy" "default" {
 }
 
 resource "google_compute_url_map" "default" {
-  name            = "armor-url-map"
+  name            = var.name
   default_service = google_compute_backend_service.this[0].self_link
 
   host_rule {
