@@ -197,7 +197,7 @@ resource "google_compute_health_check" "this" {
 
 # Cloud Armor Security policies
 resource "google_compute_security_policy" "security-policy-1" {
-  name        = "armor-security-policy"
+  name        = var.name #"armor-security-policy"
   description = "example security policy"
 
   # Reject all traffic that hasn't been whitelisted.
@@ -241,7 +241,7 @@ data "google_compute_instance" "lb-external-vmseries" {
 }
 
 resource "google_compute_instance_group" "lb-external-vmseries" {
-  name        = "lb-external-vmseries"
+  name        = var.name #"lb-external-vmseries"
   description = "Terraform test instance group"
 
   network = var.network
