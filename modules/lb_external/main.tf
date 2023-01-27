@@ -236,8 +236,8 @@ resource "google_compute_security_policy" "security-policy-1" {
 ## Creating an instance group with the vmseries instances in it
 ## so that we can control it here instead of in the vmseries autoscaling module
 data "google_compute_instance" "lb-external-vmseries" {
-  name = "vmseries-p1p9"
-  zone = "us-central1-f"
+  name = var.vm_for_instance_group
+  zone = var.vm_for_instance_group_zone
 }
 
 resource "google_compute_instance_group" "lb-external-vmseries" {

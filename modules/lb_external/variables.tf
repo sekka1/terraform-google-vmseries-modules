@@ -127,3 +127,10 @@ variable "network" {
   default     = ""
 }
 
+variable "vm_for_instance_group" {
+  description = "We should clean this up but this is hardcoding the vm that is in the instance group"
+}
+
+variable "vm_for_instance_group_zone" {
+  description = "We should clean this up but this is hardcoding the vm that is in the instance group the zone that it is in"
+}
