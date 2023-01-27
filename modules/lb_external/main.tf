@@ -260,5 +260,5 @@ resource "google_compute_instance_group" "lb-external-vmseries" {
     port = "443"
   }
 
-  zone = "us-central1-f"
+  zone = var.vm_for_instance_group_zone
 }
