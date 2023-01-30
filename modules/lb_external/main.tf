@@ -166,7 +166,7 @@ resource "google_compute_backend_service" "this" {
     group = google_compute_instance_group.lb-external-vmseries.id
   }
 
-  security_policy = google_compute_security_policy.security-policy-1.self_link
+  # security_policy = google_compute_security_policy.security-policy-1.self_link
 
   # this section requires the google-beta provider as of 2022-04-13
   # connection_tracking_policy {
