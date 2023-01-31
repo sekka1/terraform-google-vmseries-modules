@@ -166,7 +166,7 @@ resource "google_compute_backend_service" "this" {
     group = google_compute_instance_group.lb-external-vmseries.id
   }
 
-  # security_policy = google_compute_security_policy.security-policy-1.self_link
+  security_policy = google_compute_security_policy.security-policy-1.self_link
 
   # this section requires the google-beta provider as of 2022-04-13
   # connection_tracking_policy {
@@ -188,10 +188,16 @@ resource "google_compute_health_check" "this" {
   timeout_sec         = var.health_check_timeout_sec
   unhealthy_threshold = var.health_check_unhealthy_threshold
 
-  http_health_check {
-    port         = var.health_check_http_port
-    request_path = var.health_check_http_request_path
-    host         = var.health_check_http_host
+  # http_health_check {
+  #   port         = var.health_check_http_port
+  #   request_path = var.health_check_http_request_path
+  #   host         = var.health_check_http_host
+  # }
+
+  ## Using a TCP health check to the palo fw instead.  
+  ## When using the http check, the health check from the backend comes back as unhealthy
+  tcp_health_check {
+    port = var.health_check_http_port
   }
 }
 
