@@ -68,38 +68,60 @@ resource "google_compute_address" "this" {
 #   backend_service       = google_compute_backend_service.this[0].self_link
 # }
 
-# Front end of the load balancer
-resource "google_compute_global_forwarding_rule" "rule" {
-  for_each = var.rules
-  name       = each.key
-  target     = google_compute_target_http_proxy.default.self_link
-  port_range = "80"
+# Front end of the load balancer: 80
+# resource "google_compute_global_forwarding_rule" "rule" {
+#   for_each = var.rules
+#   name       = each.key
+#   target     = google_compute_target_http_proxy.default.self_link
+#   port_range = "80"
+# }
+
+# resource "google_compute_target_http_proxy" "default" {
+#   name    = "armor-proxy"
+#   url_map = google_compute_url_map.default.self_link
+# }
+
+# Front end of the load balancer: 443
+resource "google_compute_global_forwarding_rule" "rule_443" {
+  # for_each = var.rules
+  name       = "tcp-443"
+  target     = google_compute_target_tcp_proxy.rule_443.self_link
+  port_range = "443"
 }
 
-resource "google_compute_target_http_proxy" "default" {
-  name    = "armor-proxy"
-  url_map = google_compute_url_map.default.self_link
+resource "google_compute_target_tcp_proxy" "rule_443" {
+  # for_each = var.rules
+  name            = "tcp-443"
+  backend_service = google_compute_backend_service.this[0].self_link
 }
 
-resource "google_compute_url_map" "default" {
-  name            = var.name
-  default_service = google_compute_backend_service.this[0].self_link
 
-  host_rule {
-    hosts        = ["mysite.com"]
-    path_matcher = "allpaths"
-  }
 
-  path_matcher {
-    name            = "allpaths"
-    default_service = google_compute_backend_service.this[0].self_link
 
-    path_rule {
-      paths   = ["/*"]
-      service = google_compute_backend_service.this[0].self_link
-    }
-  }
-}
+
+
+
+
+
+# resource "google_compute_url_map" "default" {
+#   name            = var.name
+#   default_service = google_compute_backend_service.this[0].self_link
+
+#   host_rule {
+#     hosts        = ["mysite.com"]
+#     path_matcher = "allpaths"
+#   }
+
+#   path_matcher {
+#     name            = "allpaths"
+#     default_service = google_compute_backend_service.this[0].self_link
+
+#     path_rule {
+#       paths   = ["/*"]
+#       service = google_compute_backend_service.this[0].self_link
+#     }
+#   }
+# }
 
 
 
@@ -150,7 +172,7 @@ resource "google_compute_backend_service" "this" {
   # region                = local.region
   load_balancing_scheme = "EXTERNAL"
   health_checks         = var.create_health_check ? [google_compute_health_check.this[0].self_link] : []
-  protocol              = "HTTP" #"UNSPECIFIED"
+  protocol              = "TCP" #"UNSPECIFIED"
   project               = var.project
 
   # dynamic "backend" {
@@ -256,10 +278,10 @@ resource "google_compute_instance_group" "lb-external-vmseries" {
     data.google_compute_instance.lb-external-vmseries.self_link,
   ]
 
-  named_port {
-    name = "http"
-    port = "80"
-  }
+  # named_port {
+  #   name = "http"
+  #   port = "80"
+  # }
 
   named_port {
     name = "https"
@@ -267,4 +289,83 @@ resource "google_compute_instance_group" "lb-external-vmseries" {
   }
 
   zone = var.vm_for_instance_group_zone
+}
+
+
+
+
+
+
+
+#####################################
+## https://cloud.google.com/load-balancing/docs/tcp/ext-tcp-proxy-lb-tf-examples
+#####################################
+# reserved IP address
+resource "google_compute_global_address" "default" {
+  provider = google-beta
+  project  = var.project
+  name     = "${var.name}-3"
+}
+
+# forwarding rule
+resource "google_compute_global_forwarding_rule" "default" {
+  name                  = "${var.name}-3"
+  provider              = google-beta
+  project               = var.project
+  ip_protocol           = "TCP"
+  load_balancing_scheme = "EXTERNAL"
+  port_range            = "443"
+  target                = google_compute_target_tcp_proxy.default.id
+  ip_address            = google_compute_global_address.default.id
+}
+
+resource "google_compute_target_tcp_proxy" "default" {
+  provider        = google-beta
+  project         = var.project
+  name            = "${var.name}-3"
+  backend_service = google_compute_backend_service.default.id
+}
+
+# backend service
+resource "google_compute_backend_service" "default" {
+  provider              = google-beta
+  project               = var.project
+  name                  = "${var.name}-3"
+  protocol              = "TCP"
+  port_name             = "https"
+  load_balancing_scheme = "EXTERNAL"
+  timeout_sec           = 10
+  health_checks         = [google_compute_health_check.default.id]
+  backend {
+    group           = google_compute_instance_group.lb-external-vmseries.id
+    balancing_mode  = "UTILIZATION"
+    max_utilization = 1.0
+    capacity_scaler = 1.0
+  }
+}
+
+resource "google_compute_health_check" "default" {
+  provider           = google-beta
+  project            = var.project
+  name               = "${var.name}-3"
+  timeout_sec        = 1
+  check_interval_sec = 1
+
+  tcp_health_check {
+    port = "443"
+  }
+}
+
+# allow access from health check ranges
+resource "google_compute_firewall" "default" {
+  name          = "${var.name}-3"
+  provider      = google-beta
+  project       = var.project
+  direction     = "INGRESS"
+  network       = var.network
+  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
+  allow {
+    protocol = "tcp"
+  }
+  target_tags = ["allow-health-check"]
 }
